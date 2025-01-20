@@ -1,12 +1,23 @@
 import sql from '../db/db.js';
+import { createCart } from './cartModel.js';
 
 // TODO: Create a method createUser({ name, email, hashedPassword }) to insert a new user into the database.
 export async function createUser(name, email, hashedPassword) {
     try {
-        await sql`INSERT INTO users (name, email, password) VALUES (${name}, ${email}, ${hashedPassword})`;
+        const result = await sql`
+            INSERT INTO users (name, email, password) 
+            VALUES (${name}, ${email}, ${hashedPassword})
+            RETURNING id;
+        `;
+
+        const userId = result[0].id;
+
+        // Create a cart for the new user
+        await createCart(userId);
     } catch (error) {
         throw new Error(`Error inserting user: ${error.message}`);
     }
+
 }
 
 // TODO: Create a method getUserByEmail(email) to find a user by email.
